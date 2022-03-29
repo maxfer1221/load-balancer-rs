@@ -3,22 +3,17 @@ services:
   redis:
     ports:
       - "6379:6379"
-    build: ./docker_redis        
+    build: ./docker_images/redis
     restart: always
-    network_mode: host
-  db:
-    image: "mongo"
-    restart: always
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: user
-      MONGO_INITDB_ROOT_PASSWORD: password
-    ports:
-        - "27017:27017"
-    network_mode: host
-    command: mongod --quiet --logpath /dev/null 
-  web:
-    build: .
+  balancer:
+    build:
+      dockerfile: "./docker_images/balancer/Dockerfile"
+      context: "./"
     ports:
       - "8000:8000"
-    network_mode: host
-  
+    restart: always
+  backend:
+    build: ./docker_images/backend
+    ports:
+      - "8080-8082:8000"
+    restart: always

@@ -1,4 +1,8 @@
-docker_web
-docker_redis
-docker_*
-docker_*/
+docker_images
+.git
+target
+.gitignore
+cargo.lock
+docker-compose.yml
+dump.rbd
+README.md
