@@ -52,19 +52,23 @@ fn attempt_redis_connection(ip: String) -> redis::Connection {
 
 pub fn handle_receiver(rx: Receiver<Event>, handler: Arc<Mutex<dyn ClusterHandle>>) {
     loop {
-        let msg = rx.recv().unwrap_or_else(|err| {
+        let event = rx.recv().unwrap_or_else(|err| {
             panic!("Thread channel closed: {:?}.\n Exiting", err)
         });
-        match msg {
+        match event {
             Event::Redis(method, ip) => {
                 match &method[..] {
                     "backend_add" => {
                         let mut guard = handler.lock().unwrap_or_else(|err| { err.into_inner() });
-                        (*guard).add_backend(ip);
+                        (*guard).add_backend(ip).unwrap_or_else(|err| {
+                            println!("Error adding backend: {}", err);
+                        });
                     },
                     "backend_remove" => {
                         let mut guard = handler.lock().unwrap_or_else(|err| { err.into_inner() });
-                        (*guard).remove_backend(ip);
+                        (*guard).remove_backend(ip).unwrap_or_else(|err| {
+                            println!("Error removing backend: {}", err);
+                        });
                     },
                     _ => {}
                 }
